@@ -35,7 +35,9 @@ class CMMC_Config_Manager
         void load_config();
         void add_debug_listener(cmmc_debug_cb_t cb);
         void parse_config();
+        void dump_json_object();
     private:
+        void _write_json_file();
       StaticJsonBuffer<200> jsonBuffer;
       JsonObject* currentJsonObject = NULL;
       cmmc_debug_cb_t _user_debug_cb;

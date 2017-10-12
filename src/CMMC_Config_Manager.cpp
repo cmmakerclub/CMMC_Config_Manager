@@ -25,7 +25,22 @@ void CMMC_Config_Manager::load_config() {
     }
   } else {
     _user_debug_cb("Failed to open config file");
+		_write_json_file();
   }
+}
+
+void CMMC_Config_Manager::_write_json_file() {
+    JsonObject& json = this->jsonBuffer.createObject();
+    json["name"] = "dummyName";
+    json["mac"] = "0a0b0c0d0d0d";
+    File configFile = SPIFFS.open(filename.c_str(), "w");
+    if (!configFile) {
+      _user_debug_cb("Failed to open config file for writing");
+    }
+    else {
+      _user_debug_cb("REPLACE FILE OK!.");
+      json.printTo(configFile);
+    }
 }
 
 void CMMC_Config_Manager::parse_config() {
@@ -33,29 +48,23 @@ void CMMC_Config_Manager::parse_config() {
   if (!json.success()) {
     this->currentJsonObject = &json;
     _user_debug_cb("Failed to parse config file");
-		JsonObject& json = this->jsonBuffer.createObject();
-		json["name"] = "dummyName";
-		json["mac"] = "0a0b0c0d0d0d";
-		File configFile = SPIFFS.open(filename.c_str(), "w");
-		if (!configFile) {
-			_user_debug_cb("Failed to open config file for writing");
-		}
-		else {
-			_user_debug_cb("WRITE FILE OK!.");
-			json.printTo(configFile);
-		}
+		_write_json_file();
   }
   else {
     this->_user_debug_cb("Parsing config success.");
-		// for(JsonObject::iterator it=json.begin(); it!=json.end(); ++it)
-		// {
-		//     // *it contains the key/value pair
-		//     const char* key = it->key;
-		//     const char* value = it->value;
-		// 		Serial.printf("%s:%s\r\n", key, value);
-		//     // this also works
-		//     // value = it->value.as<const char*>();
-		// }
+  }
+}
+
+void CMMC_Config_Manager::dump_json_object() {
+  JsonObject* obj = this->currentJsonObject;
+  if (obj == NULL) return;
+  for (JsonObject::iterator it = obj->begin(); it != obj->end(); ++it) {
+    // *it contains the key/value pair
+    const char* key = it->key;
+    const char* value = it->value;
+    Serial.printf("%s:%s\r\n", key, value);
+    // _user_debug_cb()
+    // value = it->value.as<const char*>();
   }
 }
 
