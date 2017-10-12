@@ -4,7 +4,6 @@
 #include "FS.h"
 
 CMMC_Config_Manager instance("/config.json");
-CMMC_Config_Manager instance2("/config2.json");
 
 void setup()
 {
@@ -16,14 +15,7 @@ void setup()
     Serial.print("[USER]:");
     Serial.println(s);
   });
-
-  instance2.add_debug_listener([](const char* s) {
-    Serial.print("[USER]:");
-    Serial.println(s);
-  });
-
   instance.setup();
-  instance2.setup();
 }
 
 void loop()
