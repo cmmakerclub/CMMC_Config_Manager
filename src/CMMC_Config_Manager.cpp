@@ -8,55 +8,72 @@ void CMMC_Config_Manager::init() {
      while (dir.next()) {
        String fileName = dir.fileName();
        size_t fileSize = dir.fileSize();
-       USER_DEBUG_PRINTF("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+       USER_DEBUG_PRINTF("FS File: %s, size: %s", fileName.c_str(), String(fileSize).c_str());
      }
-    open_file();
+}
+
+void CMMC_Config_Manager::save_config(String key, String value) {
+  USER_DEBUG_PRINTF("[save_config]");
+  load_config();
+  USER_DEBUG_PRINTF("[[content]] %s", this->file_content);
+  JsonObject& json = this->jsonBuffer.parseObject(this->file_content);
+  json.set(key, value);
+  json.printTo(Serial);
+  configFile = SPIFFS.open(this->filename_c, "w");
+  json.printTo(configFile);
+  configFile.close();
+  Serial.println();
+  USER_DEBUG_PRINTF("/[save_config]");
 }
 
 void CMMC_Config_Manager::load_config() {
-  USER_DEBUG_PRINTF("Loading Config..");
+  USER_DEBUG_PRINTF("[load_config] Loading Config..");
+  open_file();
   if (_status == 1) {
     size_t size = configFile.size() + 1;
     std::unique_ptr<char[]> buf(new char[size + 1]);
     this->file_content_ptr = buf.get();
     bzero(this->file_content_ptr, size + 1);
     configFile.readBytes(this->file_content_ptr, size);
-    USER_DEBUG_PRINTF("config content ->%s<-", this->file_content_ptr);
-    this->parse_config();
+    strcpy(this->file_content, this->file_content_ptr);
+    USER_DEBUG_PRINTF("[load_config] config content ->%s<-", this->file_content_ptr);
+    configFile.close();
   } else {
-    USER_DEBUG_PRINTF("load_config skipped due to invalid config file.");
+    USER_DEBUG_PRINTF("[load_config] skipped due to invalid config file.");
   }
 }
 
 void CMMC_Config_Manager::_init_json_file() {
-  USER_DEBUG_PRINTF("[_init_json]");
+  USER_DEBUG_PRINTF("[_init_json_file]");
   configFile = SPIFFS.open(this->filename_c, "w");
   JsonObject& json = this->jsonBuffer.createObject();
   json.printTo(Serial);
   json.printTo(configFile);
-  USER_DEBUG_PRINTF("closing file..");
+  USER_DEBUG_PRINTF("[_init_json_file] closing file..");
   configFile.close();
 }
 
 void CMMC_Config_Manager::parse_config() {
   JsonObject& json = this->jsonBuffer.parseObject(this->file_content_ptr);
   if (json.success()) {
-    USER_DEBUG_PRINTF("Parsing config success.");
+    USER_DEBUG_PRINTF("[parse_config] Parsing config success.");
     this->currentJsonObject = &json;
   }
   else {
-    USER_DEBUG_PRINTF("Failed to parse config file");
+    USER_DEBUG_PRINTF("[parse_config] Failed to parse config file.");
     _init_json_file();
   }
 }
 
 void CMMC_Config_Manager::dump_json_object(cmmc_dump_cb_t printer) {
-  // if (printer == NULL) printer = _user_debug_cb;
-  // printer("dumping json object");
+  USER_DEBUG_PRINTF("content = ->%s<-\r\n", this->file_content_ptr);
+  this->load_config();
+  USER_DEBUG_PRINTF("content = ->%s<-\r\n", this->file_content_ptr);
   if (this->currentJsonObject == NULL) {
     return;
   }
   else {
+    this->currentJsonObject->printTo(Serial);
     char str_buffer[30];
     JsonObject* obj = this->currentJsonObject;
     for (JsonObject::iterator it = obj->begin(); it != obj->end(); ++it) {

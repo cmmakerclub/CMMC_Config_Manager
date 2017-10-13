@@ -38,33 +38,34 @@ class CMMC_Config_Manager
     void load_config();
     void add_debug_listener(cmmc_debug_cb_t cb);
     void parse_config();
+    void save_config(String key, String value);
     void dump_json_object(cmmc_dump_cb_t printer);
     void open_file() {
       USER_DEBUG_PRINTF("[open_file] filename: %s", this->filename_c);
       if (SPIFFS.exists(this->filename_c)) {
         configFile = SPIFFS.open(this->filename_c, "r");
-        USER_DEBUG_PRINTF("config size = %lu\r\n", configFile.size());
+        USER_DEBUG_PRINTF("[open_file] config size = %lu bytes", configFile.size());
         if (configFile.size() > 512) {
-          USER_DEBUG_PRINTF("Config file size is too large");
+          USER_DEBUG_PRINTF("[open_file] Config file size is too large");
         } else {
-          USER_DEBUG_PRINTF("check file size ok.");
+          USER_DEBUG_PRINTF("[open_file] check file size ok.");
           _status = 1;
         }
       } else { // file not exists
-        USER_DEBUG_PRINTF("file not existsing so create a new file");
+        USER_DEBUG_PRINTF("[open_file] file not existsing so create a new file");
         _init_json_file();
       }
     }
   private:
     void _init_json_file();
-    StaticJsonBuffer<300> jsonBuffer;
+    DynamicJsonBuffer jsonBuffer;
     JsonObject* currentJsonObject = NULL;
     cmmc_debug_cb_t _user_debug_cb;
-
     File configFile;
     char filename_c[60];
+    char file_content[300];
     char *file_content_ptr;
-    char debug_buffer[100];
+    char debug_buffer[60];
     u8 _status = 0;
 
 };
