@@ -3,19 +3,20 @@
 #include <CMMC_Config_Manager.h>
 #include "FS.h"
 
-CMMC_Config_Manager instance("/config.json");
+CMMC_Config_Manager *configManager;
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("begin");
-  Serial.println("begin");
-  Serial.println(SPIFFS.begin());
-  instance.add_debug_listener([](const char* s) {
+  configManager = new CMMC_Config_Manager("/config.json");
+  configManager->add_debug_listener([](const char* s) {
     Serial.print("[USER]:");
     Serial.println(s);
   });
-  instance.setup();
+
+  configManager->setup();
+  configManager->load_config();
 }
 
 void loop()

@@ -4,6 +4,7 @@
 #include "ESP8266WiFi.h"
 #include <functional>
 #include <ArduinoJson.h>
+#include "FS.h"
 
 #ifdef ESP8266
 extern "C" {
@@ -20,14 +21,13 @@ class CMMC_Config_Manager
 {
     public:
         // constructure
-        CMMC_Config_Manager(String f) {
-          this->_user_debug_cb = [](const char* s) { };
-          strcpy(this->filename_c, filename.c_str());
-          this->filename = String(this->filename_c);
-        }
+        CMMC_Config_Manager(const char* filename) {
+          strcpy(this->filename_c, filename);
 
-        CMMC_Config_Manager(const char* f) {
-          this->filename = String(f);
+          this->filename = String(this->filename_c);
+          this->_user_debug_cb = [](const char* s) { };
+
+          SPIFFS.begin();
         }
 
         ~CMMC_Config_Manager() {}
@@ -38,14 +38,13 @@ class CMMC_Config_Manager
         void dump_json_object();
     private:
         void _write_json_file();
-      StaticJsonBuffer<200> jsonBuffer;
-      JsonObject* currentJsonObject = NULL;
-      cmmc_debug_cb_t _user_debug_cb;
+        StaticJsonBuffer<300> jsonBuffer;
+        JsonObject* currentJsonObject = NULL;
+        cmmc_debug_cb_t _user_debug_cb;
 
-      char filename_c[60];
-      String filename;
-      char* file_content_ptr;
-
+        char filename_c[60];
+        char fileContent[512];
+        String filename;
 };
 
 #endif //CMMC_Config_Manager_H

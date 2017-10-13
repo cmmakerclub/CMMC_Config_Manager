@@ -2,9 +2,6 @@
 #include "FS.h"
 
 void CMMC_Config_Manager::setup() {
-  String result = String(SPIFFS.begin());
-  _user_debug_cb(result.c_str());
-  load_config();
 }
 
 void CMMC_Config_Manager::load_config() {
@@ -13,15 +10,20 @@ void CMMC_Config_Manager::load_config() {
   _user_debug_cb("Loading Config..");
   if (configFile) {
     size_t size = configFile.size();
-    if (size > 1024) {
+      Serial.printf("config size = %lu\r\n", size);
+    if (size > 512) {
       _user_debug_cb("Config file size is too large");
     } else {
-      std::unique_ptr<char[]> buf(new char[size]);
-      this->file_content_ptr = buf.get();
-      // load content
+      std::unique_ptr<char[]> buf(new char[size+1]);
+      bzero(buf.get(), size+1);
       configFile.readBytes(buf.get(), size);
-      Serial.println(this->file_content_ptr);
+			strcpy(this->fileContent, buf.get());
+			Serial.print("content: --->");
+      Serial.print(buf.get());
+			Serial.println("<---");
+
       this->parse_config();
+		  configFile.close();
     }
   } else {
     _user_debug_cb("Failed to open config file");
@@ -31,8 +33,7 @@ void CMMC_Config_Manager::load_config() {
 
 void CMMC_Config_Manager::_write_json_file() {
     JsonObject& json = this->jsonBuffer.createObject();
-    json["name"] = "dummyName";
-    json["mac"] = "0a0b0c0d0d0d";
+		json["nat"] = 1;
     File configFile = SPIFFS.open(filename.c_str(), "w");
     if (!configFile) {
       _user_debug_cb("Failed to open config file for writing");
@@ -40,32 +41,41 @@ void CMMC_Config_Manager::_write_json_file() {
     else {
       _user_debug_cb("REPLACE FILE OK!.");
       json.printTo(configFile);
+			configFile.close();
     }
 }
 
 void CMMC_Config_Manager::parse_config() {
-  JsonObject& json = this->jsonBuffer.parseObject(this->file_content_ptr);
-  if (!json.success()) {
+	Serial.println("Parsing confg...");
+  JsonObject& json = this->jsonBuffer.parseObject(this->fileContent);
+  if (json.success()) {
+    this->_user_debug_cb("Parsing config success.");
     this->currentJsonObject = &json;
-    _user_debug_cb("Failed to parse config file");
-		_write_json_file();
+		Serial.print("content: --->");
+    json.printTo(Serial);
+		Serial.println("<---");
+		dump_json_object();
   }
   else {
-    this->_user_debug_cb("Parsing config success.");
+    _user_debug_cb("Failed to parse config file");
+		_write_json_file();
   }
 }
 
 void CMMC_Config_Manager::dump_json_object() {
   JsonObject* obj = this->currentJsonObject;
-  if (obj == NULL) return;
-  for (JsonObject::iterator it = obj->begin(); it != obj->end(); ++it) {
-    // *it contains the key/value pair
-    const char* key = it->key;
-    const char* value = it->value;
-    Serial.printf("%s:%s\r\n", key, value);
-    // _user_debug_cb()
-    // value = it->value.as<const char*>();
-  }
+  if (obj == NULL) {
+		return;
+	}
+	else {
+	  for (JsonObject::iterator it = obj->begin(); it != obj->end(); ++it) {
+	    const char* key = it->key;
+	    const char* value = it->value;
+	    Serial.printf("%s:%s\r\n", key, value);
+	    // _user_debug_cb()
+	    // value = it->value.as<const char*>();
+	  }
+	}
 }
 
 void CMMC_Config_Manager::add_debug_listener(cmmc_debug_cb_t cb) {
