@@ -2,39 +2,50 @@
 #include "FS.h"
 
 void CMMC_Config_Manager::init() {
+    USER_DEBUG_PRINTF("initializing...");
     SPIFFS.begin();
+    Dir dir = SPIFFS.openDir("/");
+     while (dir.next()) {
+       String fileName = dir.fileName();
+       size_t fileSize = dir.fileSize();
+       USER_DEBUG_PRINTF("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+     }
     open_file();
 }
 
 void CMMC_Config_Manager::load_config() {
-  _user_debug_cb("Loading Config..");
+  USER_DEBUG_PRINTF("Loading Config..");
   if (_status == 1) {
     size_t size = configFile.size() + 1;
     std::unique_ptr<char[]> buf(new char[size + 1]);
     this->file_content_ptr = buf.get();
     bzero(this->file_content_ptr, size + 1);
     configFile.readBytes(this->file_content_ptr, size);
+    USER_DEBUG_PRINTF("config content ->%s<-", this->file_content_ptr);
     this->parse_config();
   } else {
-    _user_debug_cb("Failed to open config file");
-    _init_json_file();
+    USER_DEBUG_PRINTF("load_config skipped due to invalid config file.");
   }
 }
 
 void CMMC_Config_Manager::_init_json_file() {
+  USER_DEBUG_PRINTF("[_init_json]");
+  configFile = SPIFFS.open(this->filename_c, "w");
   JsonObject& json = this->jsonBuffer.createObject();
-  json["nat"] = 1;
+  json.printTo(Serial);
   json.printTo(configFile);
+  USER_DEBUG_PRINTF("closing file..");
+  configFile.close();
 }
 
 void CMMC_Config_Manager::parse_config() {
   JsonObject& json = this->jsonBuffer.parseObject(this->file_content_ptr);
   if (json.success()) {
-    this->_user_debug_cb("Parsing config success.");
+    USER_DEBUG_PRINTF("Parsing config success.");
     this->currentJsonObject = &json;
   }
   else {
-    _user_debug_cb("Failed to parse config file");
+    USER_DEBUG_PRINTF("Failed to parse config file");
     _init_json_file();
   }
 }
