@@ -19,10 +19,6 @@ void setup()
   configManager->load_config();
   configManager->save_config("mac", "1234567");
   configManager->save_config("nat", "ok!");
-  // configManager->dump_json_object([](const char* s,const char* k,
-  //   const char* v) {
-  //   Serial.printf("[USER]: %s->%s\r\n", k, v);
-  // });
 }
 
 void loop()
