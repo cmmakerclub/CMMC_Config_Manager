@@ -12,21 +12,31 @@ void CMMC_Config_Manager::init() {
      }
 }
 
-void CMMC_Config_Manager::save_config(String key, String value) {
-  USER_DEBUG_PRINTF(">>>[save_config] with %s:%s", key.c_str(), value.c_str());
+
+void CMMC_Config_Manager::commit() {
   static CMMC_Config_Manager *_this = this;
-  this->_k = key;
-  this->_v = value;
   load_config([](JsonObject *root) {
       _this->configFile = SPIFFS.open(_this->filename_c, "w");
-      Serial.printf("[saveeeeeeeeee] json loaded..%s:%s",
-        _this->_k.c_str(), _this->_v.c_str());
-      root->set(_this->_k, _this->_v);
-      root->printTo(Serial);
+      for (Items::iterator it=_this->items.begin(); it!=_this->items.end(); ++it) {
+        root->set(it->first, it->second);
+      }
       root->printTo(_this->configFile);
-      Serial.println();
       _this->configFile.close();
   });
+}
+
+void CMMC_Config_Manager::save_config(const char* key, const char* value) {
+  strcpy(this->_k, key);
+  strcpy(this->_v, value);
+  USER_DEBUG_PRINTF(">>>[save_config] with %s:%s", key, value);
+  static CMMC_Config_Manager *_this = this;
+  items[_k] = _v;
+  // show content:
+  for (Items::iterator it=items.begin(); it!=items.end(); ++it) {
+    USER_DEBUG_PRINTF(":::: %s->%s", it->first.c_str(), it->second.c_str());
+  }
+
+  // USER_DEBUG_PRINTF("millis() = %lu\r\n", millis());
   USER_DEBUG_PRINTF(">>>/[save_config]");
 }
 
@@ -43,7 +53,7 @@ void CMMC_Config_Manager::load_config(cmmc_json_loaded_cb_t cb) {
   if (json.success()) {
     USER_DEBUG_PRINTF("[load_config] Parsing config success.");
     if (cb != NULL) {
-    USER_DEBUG_PRINTF("[load_config] calling callback fn");
+      USER_DEBUG_PRINTF("[load_config] calling callback fn");
       cb(&json);
     }
   }

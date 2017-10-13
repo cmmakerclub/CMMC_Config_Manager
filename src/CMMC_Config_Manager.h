@@ -3,7 +3,9 @@
 
 #include "ESP8266WiFi.h"
 #include <functional>
+#include <map>
 #include <ArduinoJson.h>
+
 #include "FS.h"
 
 #ifdef ESP8266
@@ -18,6 +20,7 @@ typedef void (*cmmc_succ_status_t)(u8 status);
 typedef void (*cmmc_debug_cb_t)(const char* cause);
 typedef void (*cmmc_dump_cb_t)(const char* msg, const char* k, const char* v);
 typedef void (*cmmc_json_loaded_cb_t)(JsonObject* root);
+typedef std::map<String, String> Items;
 
 #define USER_DEBUG_PRINTF(fmt, args...) { sprintf(this->debug_buffer, fmt, ## args); _user_debug_cb(this->debug_buffer); }
 
@@ -35,10 +38,10 @@ class CMMC_Config_Manager
     }
 
     void init();
+    void commit();
     void load_config(cmmc_json_loaded_cb_t cb = NULL);
     void add_debug_listener(cmmc_debug_cb_t cb);
-    // void parse_config();
-    void save_config(String key, String value);
+    void save_config(const char* key, const char* value);
     void dump_json_object(cmmc_dump_cb_t printer);
     void open_file() {
       USER_DEBUG_PRINTF("[open_file] open filename: %s", this->filename_c);
@@ -57,14 +60,15 @@ class CMMC_Config_Manager
     }
   private:
     void _init_json_file(cmmc_json_loaded_cb_t cb = NULL);
+    Items items;
     StaticJsonBuffer<300> jsonBuffer;
     cmmc_debug_cb_t _user_debug_cb;
     File configFile;
     char filename_c[60];
     char debug_buffer[60];
     u8 _status = 0;
-    String _k;
-    String _v;
+    char _k[30];
+    char _v[50];
 };
 
 #endif //CMMC_Config_Manager_H
