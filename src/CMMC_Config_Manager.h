@@ -41,23 +41,9 @@ class CMMC_Config_Manager
     void commit();
     void load_config(cmmc_json_loaded_cb_t cb = NULL);
     void add_debug_listener(cmmc_debug_cb_t cb);
-    void save_config(const char* key, const char* value);
+    void add_field(const char* key, const char* value);
     void dump_json_object(cmmc_dump_cb_t printer);
-    void open_file() {
-      USER_DEBUG_PRINTF("[open_file] open filename: %s", this->filename_c);
-      if (SPIFFS.exists(this->filename_c)) {
-        configFile = SPIFFS.open(this->filename_c, "r");
-        USER_DEBUG_PRINTF("[open_file] config size = %lu bytes", configFile.size());
-        if (configFile.size() > 512) {
-          USER_DEBUG_PRINTF("[open_file] Config file size is too large");
-        } else {
-          USER_DEBUG_PRINTF("[open_file] check file size ok.");
-        }
-      } else { // file not exists
-        USER_DEBUG_PRINTF("[open_file] file not existsing so create a new file");
-        _init_json_file();
-      }
-    }
+
   private:
     void _init_json_file(cmmc_json_loaded_cb_t cb = NULL);
     Items items;
@@ -69,6 +55,7 @@ class CMMC_Config_Manager
     u8 _status = 0;
     char _k[30];
     char _v[50];
+    void _open_file();
 };
 
 #endif //CMMC_Config_Manager_H

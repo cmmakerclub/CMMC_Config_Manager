@@ -2,47 +2,46 @@
 #include "FS.h"
 
 void CMMC_Config_Manager::init() {
-    USER_DEBUG_PRINTF("initializing...");
-    SPIFFS.begin();
-    Dir dir = SPIFFS.openDir("/");
-     while (dir.next()) {
-       String fileName = dir.fileName();
-       size_t fileSize = dir.fileSize();
-       USER_DEBUG_PRINTF("FS File: %s, size: %s", fileName.c_str(), String(fileSize).c_str());
-     }
+  USER_DEBUG_PRINTF("initializing...");
+  SPIFFS.begin();
+  Dir dir = SPIFFS.openDir("/");
+  while (dir.next()) {
+    String fileName = dir.fileName();
+    size_t fileSize = dir.fileSize();
+    USER_DEBUG_PRINTF("FS File: %s, size: %s", fileName.c_str(), String(fileSize).c_str());
+  }
 }
-
 
 void CMMC_Config_Manager::commit() {
   static CMMC_Config_Manager *_this = this;
-  load_config([](JsonObject *root) {
-      _this->configFile = SPIFFS.open(_this->filename_c, "w");
-      for (Items::iterator it=_this->items.begin(); it!=_this->items.end(); ++it) {
-        root->set(it->first, it->second);
-      }
-      root->printTo(_this->configFile);
-      _this->configFile.close();
+  load_config([](JsonObject * root) {
+    _this->configFile = SPIFFS.open(_this->filename_c, "w");
+    for (Items::iterator it = _this->items.begin(); it != _this->items.end(); ++it) {
+      root->set(it->first, it->second);
+    }
+    root->printTo(_this->configFile);
+    _this->configFile.close();
   });
 }
 
-void CMMC_Config_Manager::save_config(const char* key, const char* value) {
+void CMMC_Config_Manager::add_field(const char* key, const char* value) {
   strcpy(this->_k, key);
   strcpy(this->_v, value);
-  USER_DEBUG_PRINTF(">>>[save_config] with %s:%s", key, value);
+  USER_DEBUG_PRINTF(">>>[add_field] with %s:%s", key, value);
   static CMMC_Config_Manager *_this = this;
   items[_k] = _v;
   // show content:
-  for (Items::iterator it=items.begin(); it!=items.end(); ++it) {
+  for (Items::iterator it = items.begin(); it != items.end(); ++it) {
     USER_DEBUG_PRINTF(":::: %s->%s", it->first.c_str(), it->second.c_str());
   }
 
   // USER_DEBUG_PRINTF("millis() = %lu\r\n", millis());
-  USER_DEBUG_PRINTF(">>>/[save_config]");
+  USER_DEBUG_PRINTF(">>>/[add_field]");
 }
 
 void CMMC_Config_Manager::load_config(cmmc_json_loaded_cb_t cb) {
   USER_DEBUG_PRINTF("[load_config] Loading Config..");
-  open_file();
+  _open_file();
   size_t size = configFile.size() + 1;
   std::unique_ptr<char[]> buf(new char[size + 1]);
   bzero(buf.get(), size + 1);
@@ -94,5 +93,21 @@ void CMMC_Config_Manager::dump_json_object(cmmc_dump_cb_t printer) {
 void CMMC_Config_Manager::add_debug_listener(cmmc_debug_cb_t cb) {
   if (cb != NULL) {
     this->_user_debug_cb = cb;
+  }
+}
+
+void CMMC_Config_Manager::_open_file()  {
+  USER_DEBUG_PRINTF("[open_file] open filename: %s", this->filename_c);
+  if (SPIFFS.exists(this->filename_c)) {
+    configFile = SPIFFS.open(this->filename_c, "r");
+    USER_DEBUG_PRINTF("[open_file] config size = %lu bytes", configFile.size());
+    if (configFile.size() > 512) {
+      USER_DEBUG_PRINTF("[open_file] Config file size is too large");
+    } else {
+      USER_DEBUG_PRINTF("[open_file] check file size ok.");
+    }
+  } else { // file not exists
+    USER_DEBUG_PRINTF("[open_file] file not existsing so create a new file");
+    _init_json_file();
   }
 }

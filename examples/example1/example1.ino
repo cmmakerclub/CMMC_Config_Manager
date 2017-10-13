@@ -12,12 +12,12 @@ void setup()
   SPIFFS.begin();
   configManager = new CMMC_Config_Manager("/apconfig.json");
   configManager->add_debug_listener([](const char* s) {
-    Serial.printf("-> %s\r\n", s);
+    // Serial.printf("-> %s\r\n", s);
   });
 
   configManager->init();
-  configManager->save_config("nat", "ok!");
-  configManager->save_config("mac", "1234567");
+  configManager->add_field("nat", "ok!");
+  configManager->add_field("mac", "1234567");
   configManager->commit();
 
   configManager->load_config([](JsonObject *root) {
