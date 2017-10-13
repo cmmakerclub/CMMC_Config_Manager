@@ -8,14 +8,14 @@ CMMC_Config_Manager configManager;
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("begin");
+  
   SPIFFS.begin();
-  configManager.add_debug_listener([](const char* s) {
-    // Serial.printf("-> %s\r\n", s);
-  });
+  configManager.add_debug_listener([](const char* s) { });
 
   configManager.init("/apconfig.json");
-  configManager.add_field("maggie", "win!");
+  configManager.add_field("wifi", "nat");
+  configManager.add_field("ssid", "p12345678");
+  configManager.add_field("mac", "062696d86551");
   configManager.commit();
 
   configManager.load_config([](JsonObject *root) {
