@@ -17,6 +17,10 @@ void setup()
 
   configManager->setup();
   configManager->load_config();
+  configManager->dump_json_object([](const char* s,const char* k,
+    const char* v) {
+    Serial.printf("[USER]: %s->%s\r\n", k, v);
+  });
 }
 
 void loop()
