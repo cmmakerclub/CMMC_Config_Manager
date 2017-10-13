@@ -1,7 +1,8 @@
 #include "CMMC_Config_Manager.h"
 #include "FS.h"
 
-void CMMC_Config_Manager::init() {
+void CMMC_Config_Manager::init(const char* filename) {   
+  strcpy(this->filename_c, filename);
   USER_DEBUG_PRINTF("initializing...");
   SPIFFS.begin();
   Dir dir = SPIFFS.openDir("/");

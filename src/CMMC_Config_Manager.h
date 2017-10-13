@@ -28,8 +28,7 @@ class CMMC_Config_Manager
 {
   public:
     // constructure
-    CMMC_Config_Manager(const char* filename) {
-      strcpy(this->filename_c, filename);
+    CMMC_Config_Manager() {
       this->_user_debug_cb = [](const char* s) { };
     }
 
@@ -37,7 +36,7 @@ class CMMC_Config_Manager
       configFile.close();
     }
 
-    void init();
+    void init(const char* filename = "/config.json");
     void commit();
     void load_config(cmmc_json_loaded_cb_t cb = NULL);
     void add_debug_listener(cmmc_debug_cb_t cb);
