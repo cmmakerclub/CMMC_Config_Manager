@@ -17,6 +17,7 @@ typedef void (*cmmc_err_status_t)(u8 status, const char* cause);
 typedef void (*cmmc_succ_status_t)(u8 status);
 typedef void (*cmmc_debug_cb_t)(const char* cause);
 typedef void (*cmmc_dump_cb_t)(const char* msg, const char* k, const char* v);
+typedef void (*cmmc_json_loaded_cb_t)(JsonObject* root);
 
 #define USER_DEBUG_PRINTF(fmt, args...) { sprintf(this->debug_buffer, fmt, ## args); _user_debug_cb(this->debug_buffer); }
 
@@ -34,9 +35,9 @@ class CMMC_Config_Manager
     }
 
     void init();
-    void load_config();
+    void load_config(cmmc_json_loaded_cb_t cb = NULL);
     void add_debug_listener(cmmc_debug_cb_t cb);
-    void parse_config();
+    // void parse_config();
     void save_config(String key, String value);
     void dump_json_object(cmmc_dump_cb_t printer);
     void open_file() {
@@ -55,15 +56,15 @@ class CMMC_Config_Manager
       }
     }
   private:
-    void _init_json_file();
+    void _init_json_file(cmmc_json_loaded_cb_t cb = NULL);
     StaticJsonBuffer<300> jsonBuffer;
     cmmc_debug_cb_t _user_debug_cb;
     File configFile;
     char filename_c[60];
-    char file_content[300];
     char debug_buffer[60];
     u8 _status = 0;
-
+    String _k;
+    String _v;
 };
 
 #endif //CMMC_Config_Manager_H
