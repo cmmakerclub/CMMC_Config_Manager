@@ -1,7 +1,9 @@
 #include "CMMC_Config_Manager.h"
 #include "FS.h"
 
-void CMMC_Config_Manager::setup() {
+void CMMC_Config_Manager::init() {
+    SPIFFS.begin();
+    open_file();
 }
 
 void CMMC_Config_Manager::load_config() {

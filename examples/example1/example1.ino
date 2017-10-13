@@ -15,7 +15,7 @@ void setup()
     Serial.println(s);
   });
 
-  configManager->setup();
+  configManager->init();
   configManager->load_config();
   configManager->dump_json_object([](const char* s,const char* k,
     const char* v) {
