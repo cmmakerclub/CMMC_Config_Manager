@@ -1,18 +1,21 @@
 #######################################
-# Syntax Coloring Map For Wire
+# Syntax Coloring Map For Config_Manager
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-CMMC_Config_Manager			KEYWORD1
-Config_Manager				KEYWORD1
+CMMC_ConfigManager			KEYWORD1
+ConfigManager				KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-begin 					KEYWORD2
+begin					KEYWORD2
+add_field				KEYWORD2
+commit					KEYWORD2
+load_config				KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)
