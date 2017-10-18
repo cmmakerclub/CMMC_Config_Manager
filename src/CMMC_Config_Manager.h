@@ -26,7 +26,10 @@ typedef void (*cmmc_dump_cb_t)(const char* msg, const char* k, const char* v);
 typedef void (*cmmc_json_loaded_cb_t)(JsonObject* root);
 typedef std::map<String, String> Items;
 
-#define USER_DEBUG_PRINTF(fmt, args...) { sprintf(this->debug_buffer, fmt, ## args); _user_debug_cb(this->debug_buffer); }
+#define USER_DEBUG_PRINTF(fmt, args...) { \
+  sprintf(this->debug_buffer, fmt, ## args); \
+  _user_debug_cb(this->debug_buffer); \
+}
 
 class CMMC_Config_Manager
 {

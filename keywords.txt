@@ -6,6 +6,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 CMMC_ConfigManager			KEYWORD1
+CMMC_Config_Manager			KEYWORD1
 ConfigManager				KEYWORD1
 
 #######################################
