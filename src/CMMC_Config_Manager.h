@@ -34,7 +34,7 @@ typedef std::map<String, String> Items;
 class CMMC_Config_Manager
 {
   public:
-    // constructure
+    // constructor
     CMMC_Config_Manager() {
       this->_user_debug_cb = [](const char* s) { };
     }
